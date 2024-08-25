@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 })
 export class LoginCreateComponent {
   form: FormGroup;
-  roles: string[] = ['admin', 'user', 'invitado'];
+  roles: string[] = ['Admin', 'Usuario', 'Invitado'];
   equalPasswords: string = '';
 
   constructor(private blog: FormBuilder, private route: Router) {
@@ -17,26 +17,25 @@ export class LoginCreateComponent {
       email: ['', [Validators.required, Validators.email]],
       contraseña: ['', [Validators.required, Validators.minLength(6)]],
       confirmarContraseña: ['', [Validators.required, Validators.minLength(6),]],
-      role: ['user'] 
+      role: ['user']
     });
   }
 
   ngOnInit(): void {
-   
+
     this.form.valueChanges.subscribe((values) => {
       console.log('El email es:', this.form.get('email')?.value);
       console.log('La contraseña es:', this.form.get('contraseña')?.value);
       console.log('La confirmación de la contraseña es:', this.form.get('confirmarContraseña')?.value);
 
-     if (this.form.get('contraseña')?.value !== this.form.get('confirmarContraseña')?.value) {
+      if (this.form.get('contraseña')?.value !== this.form.get('confirmarContraseña')?.value) {
         this.equalPasswords = 'false';
         console.log('Las contraseñas no coinciden', this.equalPasswords);
-      }else {
+      } else {
         this.equalPasswords = 'true';
         console.log('Las contraseñas coinciden', this.equalPasswords);
-
-    }
-  });
+      }
+    });
   }
 
   LoginGoogle(): void {
@@ -47,7 +46,7 @@ export class LoginCreateComponent {
   }
 
   LoginFacebook(): void {
- 
+
     console.log('Login with Facebook');
 
     window.open('http://facebook.com/');
@@ -55,7 +54,7 @@ export class LoginCreateComponent {
   }
 
   LoginCreate(): void {
-    if (this.form.valid) { // Asegúrate de que el formulario sea válido
+    if (this.form.valid) {
       const email = this.form.get('email')?.value;
       const contraseña = this.form.get('contraseña')?.value;
       const confirmarContraseña = this.form.get('confirmarContraseña')?.value;
@@ -66,8 +65,6 @@ export class LoginCreateComponent {
       console.log('Confirmación de contraseña:', confirmarContraseña);
       console.log('Rol:', role);
 
-      // Aquí podrías realizar la lógica adicional para crear el usuario
-      // Ejemplo: enviar los datos a un servicio para guardarlos
     } else {
       console.log('El formulario no es válido');
     }

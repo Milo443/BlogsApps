@@ -19,7 +19,7 @@ export class LoginComponent {
   }
 
   ngOnInit(): void {
-   
+
     this.form.valueChanges.subscribe((values) => {
       console.log('El email es:', values.email);
       console.log('La contraseña es:', values.contraseña);
@@ -35,7 +35,7 @@ export class LoginComponent {
   }
 
   LoginFacebook(): void {
- 
+
     console.log('Login with Facebook');
 
     window.open('http://facebook.com/');

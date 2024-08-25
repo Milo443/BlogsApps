@@ -35,37 +35,39 @@
         <!-- Inputs aquí -->
         <form [formGroup]="form" class="formulario-input">
 
-<!-- Email Field -->
-<mat-form-field class="example-full-width" appearance="fill">
-  <mat-label>Email</mat-label>
-  <input matInput id="email" formControlName="email" placeholder="email" class="custom-input">
-  <mat-error *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
-    <ng-container *ngIf="form.get('email')?.errors?.['required']">
-      El correo electrónico es <strong>obligatorio.</strong>
-    </ng-container>
-    <ng-container *ngIf="form.get('email')?.errors?.['email']">
-      El formato del correo electrónico no es válido.
-    </ng-container>
-  </mat-error>
-</mat-form-field>
+          <!-- Email Field -->
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Email</mat-label>
+            <input matInput id="email" formControlName="email" placeholder="email" class="custom-input">
+            <mat-error *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+              <ng-container *ngIf="form.get('email')?.errors?.['required']">
+                El correo electrónico es <strong>obligatorio.</strong>
+              </ng-container>
+              <ng-container *ngIf="form.get('email')?.errors?.['email']">
+                El formato del correo electrónico no es válido.
+              </ng-container>
+            </mat-error>
+          </mat-form-field>
 
-<!-- Password Field -->
-<mat-form-field class="example-full-width" appearance="fill">
-  <mat-label>Contraseña</mat-label>
-  <input matInput id="contraseña" formControlName="contraseña" placeholder="contraseña" class="custom-input">
-  <mat-error *ngIf="form.get('contraseña')?.invalid && form.get('contraseña')?.touched">
-    <ng-container *ngIf="form.get('contraseña')?.errors?.['required']">
-      La contraseña es <strong>obligatoria.</strong>
-    </ng-container>
-    <ng-container *ngIf="form.get('contraseña')?.errors?.['minlength']">
-      La contraseña debe tener al menos 6 caracteres.
-    </ng-container>
-  </mat-error>
-</mat-form-field>
+          <!-- Password Field -->
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Contraseña</mat-label>
+            <input matInput id="contraseña" formControlName="contraseña" placeholder="contraseña" class="custom-input">
+            <mat-error *ngIf="form.get('contraseña')?.invalid && form.get('contraseña')?.touched">
+              <ng-container *ngIf="form.get('contraseña')?.errors?.['required']">
+                La contraseña es <strong>obligatoria.</strong>
+              </ng-container>
+              <ng-container *ngIf="form.get('contraseña')?.errors?.['minlength']">
+                La contraseña debe tener al menos 6 caracteres.
+              </ng-container>
+            </mat-error>
+          </mat-form-field>
 
+        <!-- Botones -->
+         
           <div class="recoverpassword">
             <nav (click)="recuperar()">¿Olvidaste tú contraseña?</nav>
-          </div>  
+          </div>
 
           <div class="button">
             <button type="submit" (click)="Login()" [ngClass]="{'btn-primary': true,'disabled': form.invalid}"
