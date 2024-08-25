@@ -11,7 +11,7 @@ interface WeatherForecast {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
   public forecasts: WeatherForecast[] = [];
@@ -32,6 +32,8 @@ export class AppComponent implements OnInit {
       }
     );
   }
+
+  mostrar: boolean | undefined = false;
 
   title = 'blogsapps.client';
 }
