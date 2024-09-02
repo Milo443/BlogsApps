@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { LoginService } from './login.service';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +12,7 @@ export class LoginComponent {
 
   form: FormGroup;
 
-  constructor(private blog: FormBuilder, private route: Router) {
+  constructor(private blog: FormBuilder, private route: Router, private loginService: LoginService) {
     this.form = this.blog.group({
       email: ['', [Validators.required, Validators.email]],
       contraseña: ['', [Validators.required, Validators.minLength(6)]]
@@ -43,7 +44,17 @@ export class LoginComponent {
   }
 
   Login(): void {
-    console.log('Intentando loguear');
+    this.loginService.Login(this.form.value.email, this.form.value.contraseña).subscribe(
+      (Response: any) => {
+        console.log('Respuesta del servidor:', Response);
+
+        localStorage.setItem('rol', Response.token);
+
+        //localStorage.removeItem('rol');
+
+      }, (error) => {
+        console.log('Respuesta del servidor:', error);
+      });
   }
 
   recuperar(): void {

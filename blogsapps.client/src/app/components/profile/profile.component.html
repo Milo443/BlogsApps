@@ -1,0 +1,122 @@
+<!-- Redirigir a home -->
+<div class="home-container">
+  <button (click)="home()" mat-button><mat-icon class="home">home</mat-icon></button>
+</div>
+
+<!-- perfil-usuario.component.html -->
+<div class="perfil-container" *ngIf="usuarioPerfil">
+  <div class="perfil-header">
+    <img [src]="usuarioPerfil.imageUrl" alt="{{ usuarioPerfil.user }}" class="perfil-imagen">
+    <div class="perfil-info">
+      <!-- Modo edición -->
+      <div *ngIf="editMode; else viewMode">
+        <form (ngSubmit)="guardarCambios()">
+          <mat-form-field appearance="fill">
+            <mat-label>Nombre de Usuario</mat-label>
+            <input matInput id="username" [(ngModel)]="usuarioPerfil.username" name="username" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>ID de Usuario</mat-label>
+            <input matInput id="user" [(ngModel)]="usuarioPerfil.user" name="user" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Descripción</mat-label>
+            <textarea matInput id="descripcion" [(ngModel)]="usuarioPerfil.descripcion" name="descripcion"
+              required></textarea>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit">Guardar Cambios</button>
+          <button mat-raised-button color="accent" type="button" (click)="cancelarEdicion()">Cancelar</button>
+        </form>
+      </div>
+
+      <!-- Modo vista -->
+      <ng-template #viewMode>
+        <div class="perfil-info-view">
+          <h1 class="perfil-usuario">{{ usuarioPerfil.username }}</h1>
+          <h2 class="perfil-nombre"> &#64;{{ usuarioPerfil.user }}</h2>
+          <p class="perfil-bio">{{ usuarioPerfil.descripcion }}</p>
+          <div class="perfil-actions">
+            <button *ngIf="user !== ''" mat-raised-button color="primary" (click)="activarEdicion()">Editar
+              Perfil</button>
+            <button mat-raised-button color="primary" (click)="follow()">Seguir</button>
+            <button mat-raised-button color="primary" (click)="unfollow()">Dejar de seguir</button>
+            <button mat-raised-button color="primary" (click)="block()">Bloquear</button>
+            <button mat-raised-button color="primary" (click)="unlock()">Desbloquear</button>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<div class="body" *ngIf="usuarioPerfil">
+  <mat-card class="example-card">
+    <mat-card-header>
+      <div mat-card-avatar class="example-header-image"></div>
+      <mat-card-title>{{ usuarioPerfil.username }}</mat-card-title>
+      <mat-card-subtitle>{{ usuarioPerfil.user }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <h6>{{ usuarioPerfil.descripcion }}</h6>
+    </mat-card-content>
+    <div class="imagen">
+      <img mat-card-image class="image" [src]="usuarioPerfil.imageUrl" alt="Foto de {{ usuarioPerfil.username }}">
+    </div>
+    <mat-card-actions>
+      <div class="reacciones">
+        <button (click)="like()" mat-button><mat-icon class="like">thumb_up</mat-icon></button>
+        <button (click)="comment()" *ngIf="rol === 'admin' || rol ==='autor'" mat-button><mat-icon
+            class="comment">comment</mat-icon></button>
+        <button (click)="share()" mat-button><mat-icon class="share">share</mat-icon></button>
+        <button (click)="delete()" *ngIf="rol === 'admin'" mat-button><mat-icon
+            class="delete">delete</mat-icon></button>
+      </div>
+    </mat-card-actions>
+
+    <mat-card-actions *ngIf="comentario">
+      <!-- comments.component.html -->
+      <div class="comments-container">
+        <!-- Comentarios existentes -->
+        <div class="comments-list">
+          <div class="comment-item">
+            <div class="comment-author">Juan Pérez</div>
+            <div class="comment-text">¡Este es un gran post! Me ayudó mucho a entender el tema.</div>
+            <div class="comment-date">1 de septiembre de 2024</div>
+          </div>
+
+          <div class="comment-item">
+            <div class="comment-author">María Gómez</div>
+            <div class="comment-text">Gracias por la información. Estaba buscando algo así.</div>
+            <div class="comment-date">2 de septiembre de 2024</div>
+          </div>
+
+          <div class="comment-item">
+            <div class="comment-author">Carlos López</div>
+            <div class="comment-text">Muy interesante, pero me gustaría más ejemplos prácticos.</div>
+            <div class="comment-date">3 de septiembre de 2024</div>
+          </div>
+        </div>
+
+        <button *ngIf="!comentarPostFlag" (click)="comentarPost()" mat-raised-button color="primary"
+          type="submit">Comentar</button>
+
+        <!-- Formulario para añadir un nuevo comentario -->
+        <form class="comment-form" *ngIf="comentarPostFlag">
+          <div class="comentario">
+            <mat-form-field appearance="fill">
+              <mat-label>Comentario</mat-label>
+              <textarea matInput [(ngModel)]="nuevoComentario" name="comentario" placeholder="Tu comentario"></textarea>
+            </mat-form-field>
+          </div>
+          <div class="guardarComentario">
+            <button (click)="guardarComentario()" mat-raised-button color="primary" type="submit">Publicar
+              comentario</button>
+          </div>
+        </form>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</div>

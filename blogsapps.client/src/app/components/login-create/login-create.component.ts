@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { LoginCreateService } from './login-create.service';
 
 @Component({
   selector: 'app-login-create',
@@ -9,15 +10,15 @@ import { Router } from '@angular/router';
 })
 export class LoginCreateComponent {
   form: FormGroup;
-  roles: string[] = ['Admin', 'Usuario', 'Invitado'];
+  roles: string[] = ['Lector', 'Autor'];
   equalPasswords: string = '';
 
-  constructor(private blog: FormBuilder, private route: Router) {
+  constructor(private blog: FormBuilder, private route: Router, private loginCreateService: LoginCreateService) {
     this.form = this.blog.group({
       email: ['', [Validators.required, Validators.email]],
       contraseña: ['', [Validators.required, Validators.minLength(6)]],
       confirmarContraseña: ['', [Validators.required, Validators.minLength(6),]],
-      role: ['user']
+      role: ['Lector']
     });
   }
 
@@ -60,10 +61,11 @@ export class LoginCreateComponent {
       const confirmarContraseña = this.form.get('confirmarContraseña')?.value;
       const role = this.form.get('role')?.value;
 
-      console.log('Creando al usuario con email:', email);
-      console.log('Contraseña:', contraseña);
-      console.log('Confirmación de contraseña:', confirmarContraseña);
-      console.log('Rol:', role);
+      this.loginCreateService.LoginCreate(email, contraseña, role).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+
+        });
 
     } else {
       console.log('El formulario no es válido');

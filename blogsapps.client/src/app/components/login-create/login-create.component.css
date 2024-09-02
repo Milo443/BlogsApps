@@ -56,11 +56,11 @@
 }
 
 /* Estilo para los elementos dentro de la columna de inicio de sesión */
-.button-paginaPrincipal .logo {
+.button-paginaPrincipal {
   margin-bottom: 20px;
 }
 
-.button-paginaPrincipal .encabezado {
+.button-paginaPrincipal {
   margin-bottom: 20px;
 }
 
@@ -222,4 +222,24 @@ p {
   margin: 0;
   color: black;
   left: 10%;
+}
+
+.logo {
+  margin-top: -10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1%;
+  mix-blend-mode: multiply;
+  margin-left: 0.5%;
+}
+
+.img-logo {
+  width: 70%;
+  height: 50%;
+}
+
+.encabezado-crear {
+  margin-top: -15%;
+  margin-bottom: 5%;
 }
