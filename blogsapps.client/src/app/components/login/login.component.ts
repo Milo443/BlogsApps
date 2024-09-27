@@ -21,10 +21,10 @@ export class LoginComponent {
 
   ngOnInit(): void {
 
-    this.form.valueChanges.subscribe((values) => {
-      console.log('El email es:', values.email);
-      console.log('La contraseña es:', values.contraseña);
-    });
+    // this.form.valueChanges.subscribe((values) => {
+    //   console.log('El email es:', values.email);
+    //   console.log('La contraseña es:', values.contraseña);
+    // });
   }
 
 
@@ -44,13 +44,25 @@ export class LoginComponent {
   }
 
   Login(): void {
-    this.loginService.Login(this.form.value.email, this.form.value.contraseña).subscribe(
+    this.loginService.Login().subscribe(
       (Response: any) => {
         console.log('Respuesta del servidor:', Response);
+ 
+        Response.forEach((usuario: { email: any; password: any; role: any; name: any, userId: any}) => {
 
-        localStorage.setItem('rol', Response.token);
+          if (usuario.email === this.form.value.email && usuario.password === this.form.value.contraseña) {
+            console.log('Usuario logueado:', usuario);
 
-        //localStorage.removeItem('rol');
+           localStorage.setItem('rol', usuario.role);
+           localStorage.setItem('user', usuario.email);
+           localStorage.setItem('userId', usuario.userId);
+
+            this.route.navigate(['/Home']);
+          }else{
+            console.log('No existe el usuario');
+          }
+          
+        });
 
       }, (error) => {
         console.log('Respuesta del servidor:', error);

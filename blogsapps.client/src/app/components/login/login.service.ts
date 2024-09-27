@@ -14,14 +14,9 @@ export class LoginService {
     constructor(private http: HttpClient) { }
 
     // Método para agregar un nuevo punto de venta
-    public Login(email: string, password: string) {
-        // Crear el objeto con todos los datos del formulario
-        const objLogin = { email: email, password: password };
-
-        console.log('Objeto a loguear:', objLogin);
-
+    public Login() {
         // Enviar la solicitud POST
-        return this.http.post<any>(`${this.API}Login`, objLogin);
+        return this.http.get<any>(`${this.API}Users`);
     }
 
 }

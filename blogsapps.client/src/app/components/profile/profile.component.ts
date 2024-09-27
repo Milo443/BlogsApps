@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class ProfileComponent implements OnInit {
   editMode: boolean = false;
   usuarioPerfil: any = {};
+  postUsuario: any[] = [];
   rol: string = '';
   user: string = '';
   user_perfil: string = '';
@@ -18,63 +19,6 @@ export class ProfileComponent implements OnInit {
   flagComentario: number = 0;
   comentarPostFlag: boolean = false;
   nuevoComentario: string = '';
-
-  public post = [
-    {
-      user: 'user1',
-      username: 'johndoe',
-      descripcion: 'Desarrollador frontend con 5 años de experiencia en Angular y React.',
-      imageUrl: 'https://picsum.photos/200/200?random=1'
-    },
-    {
-      user: 'user2',
-      username: 'janedoe',
-      descripcion: 'Especialista en diseño UX/UI con un enfoque en accesibilidad y usabilidad.',
-      imageUrl: 'https://picsum.photos/200/200?random=2'
-    },
-    {
-      user: 'user2',
-      username: 'janedoe',
-      descripcion: 'Especialista en diseño UX/UI con un enfoque en accesibilidad y usabilidad.',
-      imageUrl: 'https://picsum.photos/200/200?random=2'
-    },
-    {
-      user: 'user3',
-      username: 'michael',
-      descripcion: 'Ingeniero de software con experiencia en backend utilizando Node.js y Python.',
-      imageUrl: 'https://picsum.photos/200/200?random=3'
-    },
-    {
-      user: 'user4',
-      username: 'emily',
-      descripcion: 'Data scientist con habilidades en análisis de datos y aprendizaje automático.',
-      imageUrl: 'https://picsum.photos/200/200?random=4'
-    },
-    {
-      user: 'user5',
-      username: 'alex',
-      descripcion: 'Product manager con experiencia en gestión de proyectos ágiles y desarrollo de producto.',
-      imageUrl: 'https://picsum.photos/200/200?random=5'
-    },
-    {
-      user: 'user6',
-      username: 'sarah',
-      descripcion: 'Desarrolladora de bases de datos con experiencia en SQL y NoSQL.',
-      imageUrl: 'https://picsum.photos/200/200?random=6'
-    },
-    {
-      user: 'user7',
-      username: 'david',
-      descripcion: 'Administrador de sistemas con experiencia en servidores y redes.',
-      imageUrl: 'https://picsum.photos/200/200?random=7'
-    },
-    {
-      user: 'user8',
-      username: 'laura',
-      descripcion: 'Especialista en seguridad informática con un enfoque en protección de datos y prevención de amenazas.',
-      imageUrl: 'https://picsum.photos/200/200?random=8'
-    }
-  ];
 
   constructor(
     private usuarioService: UsuarioService,
@@ -194,7 +138,39 @@ export class ProfileComponent implements OnInit {
 
 
   cargarperfil(username: string): void {
-    this.usuarioPerfil = this.post.find((post) => post.username === username) || {};
-    console.log('Perfil del usuario:', this.usuarioPerfil);
-  }
+
+    this.usuarioService.obtenerPerfil(username).subscribe(
+      (response) => {
+        this.usuarioPerfil = response;
+        console.log('Perfil cargado:', response);
+        this.post(response.name, response.email);
+      },
+      (error) => {
+        console.error('Error al cargar el perfil:', error);
+
+  });
+}
+
+post(name: string, username: string): void {
+  this.usuarioService.post().subscribe(
+    (response) => {
+      const postsConUsuario = response.map((post: any) => ({
+        ...post,
+        username: username,
+        user: name
+      }));
+
+      // Agrega los nuevos posts al array existente
+      this.postUsuario = [...this.postUsuario, ...postsConUsuario]; 
+      console.log('Posts actualizados:', this.postUsuario);
+    },
+    (error) => {
+      console.error('Error al cargar los posts:', error);
+    }
+  );
+}
+
+
+
+
 }

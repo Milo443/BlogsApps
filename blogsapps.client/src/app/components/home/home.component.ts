@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, of, startWith } from 'rxjs';
+import { HomeService } from './home.service';
+import { LoginService } from '../login/login.service';
 
 @Component({
   selector: 'app-home',
@@ -9,7 +11,7 @@ import { map, Observable, of, startWith } from 'rxjs';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-
+  
   form: FormGroup | undefined;
 
   rol: string = '';
@@ -18,101 +20,65 @@ export class HomeComponent implements OnInit {
   flagComentario: number = 0;
   comentarPostFlag: boolean = false;
   nuevoComentario: string = '';
-
+  
+  comentarios: any[] = [];
   forMe: any[] = [];
-
-  // Datos de usuarios
-  public usuarios = [
-    {
-      user: 'user1',
-      username: 'johndoe',
-      descripcion: 'Desarrollador frontend con 5 años de experiencia en Angular y React.',
-      imageUrl: 'https://picsum.photos/200/200?random=1'
-    },
-    {
-      user: 'user2',
-      username: 'janedoe',
-      descripcion: 'Ingeniero de software con experiencia en backend utilizando Node.js y Python.',
-      imageUrl: 'https://picsum.photos/200/200?random=3'
-    },
-    {
-      user: 'user2',
-      username: 'janedoe',
-      descripcion: 'Ingeniero de software con experiencia en backend utilizando Node.js y Python.',
-      imageUrl: 'https://picsum.photos/200/200?random=3'
-    },
-    {
-      user: 'user3',
-      username: 'michael',
-      descripcion: 'Ingeniero de software con experiencia en backend utilizando Node.js y Python.',
-      imageUrl: 'https://picsum.photos/200/200?random=3'
-    },
-    {
-      user: 'user4',
-      username: 'emily',
-      descripcion: 'Data scientist con habilidades en análisis de datos y aprendizaje automático.',
-      imageUrl: 'https://picsum.photos/200/200?random=4'
-    },
-    {
-      user: 'user5',
-      username: 'alex',
-      descripcion: 'Product manager con experiencia en gestión de proyectos ágiles y desarrollo de producto.',
-      imageUrl: 'https://picsum.photos/200/200?random=5'
-    },
-    {
-      user: 'user6',
-      username: 'sarah',
-      descripcion: 'Desarrolladora de bases de datos con experiencia en SQL y NoSQL.',
-      imageUrl: 'https://picsum.photos/200/200?random=6'
-    },
-    {
-      user: 'user7',
-      username: 'david',
-      descripcion: 'Administrador de sistemas con experiencia en servidores y redes.',
-      imageUrl: 'https://picsum.photos/200/200?random=7'
-    },
-    {
-      user: 'user8',
-      username: 'laura',
-      descripcion: 'Especialista en seguridad informática con un enfoque en protección de datos y prevención de amenazas.',
-      imageUrl: 'https://picsum.photos/200/200?random=8'
-    }
-  ];
+  usuarios: any[] = [];
+  posts: any[] = [];
+  buscar: any[] = [];
 
   filteredUsers: Observable<any[]> = of([]);
-
   controlCambios = new FormControl();
 
-  ngOnInit() {
+  constructor(private route: Router, private homeService: HomeService, private loginService: LoginService) {}
 
+  ngOnInit() {
     this.logueado = localStorage.getItem('rol') || '';
 
-    if (this.logueado != '') {
+    if (this.logueado) {
       this.rol = this.logueado;
       console.log(this.rol);
     }
 
-    this.forMe = this.usuarios;
+    this.user();
 
-    this.filteredUsers = this.controlCambios.valueChanges
-      .pipe(
-        startWith(''),
-        map(value => this._filter(value))
-      );
+    this.filteredUsers = this.controlCambios.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filter(value))
+    );
 
     this.controlCambios.valueChanges.subscribe(value => {
       console.log(value);
-      this.revisarPerfil(value);
       this.forMe = this._filter(value);
+
+      if (this.forMe.length === 0) {
+        this.forMe = this.buscar;
+      }
+
+      let usuario = 0;
+
+      this.forMe.forEach((user: any) => {
+
+        if (user.username === value) {
+          usuario = user.userId;
+          console.log('Usuario encontrado:', usuario);
+        }
+
+      });
+
+      if (usuario != 0) {
+        this.revisarPerfil(usuario);
+      }
+
+
     });
   }
 
-  constructor(private route: Router) { }
-
   private _filter(value: string): any[] {
     const filterValue = value.toLowerCase();
-
-    return this.usuarios.filter(user => user.username.toLowerCase().includes(filterValue) || user.descripcion.toLowerCase().includes(filterValue)
+    return this.forMe.filter(user => 
+      user.username.toLowerCase().includes(filterValue) || 
+      user.descripcion.toLowerCase().includes(filterValue)
     );
   }
 
@@ -127,60 +93,162 @@ export class HomeComponent implements OnInit {
   }
 
   revisarPerfil(username: any): void {
-
-    if (username == 'me') {
+    if (username === 'me') {
+      const username = localStorage.getItem('userId');
       console.log('Navegando a mi perfil');
-      username = localStorage.getItem('user');
       this.route.navigate(['/Profile', username]);
     } else {
       console.log('Navegando al perfil de:', username);
       this.route.navigate(['/Profile', username]);
-
     }
   }
 
-  like(): void {
-    console.log('Vamos a dar like');
+  like(postId: any): void {
+
+    const userId = localStorage.getItem('userId');
+    
+    console.log('El usuario con id', userId , 'le dio like al Post con id ', postId)
+
+    if(userId != null){
+
+      this.homeService.like(userId, postId).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+        },
+        (error) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+    }
   }
 
-  comment(): void {
-    console.log('Vamos a Comentar');
+  comment(postId: string): void {
+    this.comentarPostFlag = true;
+  
+    console.log('Vamos a comentar');
     this.flagComentario += 1;
-
     console.log(this.flagComentario);
+  
+    this.comentario = this.flagComentario % 2 !== 0;
+    console.log(this.comentario ? 'Abrir' : 'Cerrar');
+  
+    if (this.comentario) {
+      localStorage.setItem('postId', postId);
 
-    if (this.flagComentario % 2 !== 0) {
-      this.comentario = true;
-      console.log('Abrir');
+     this.homeService.comentarios().subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+          this.comentarios = Response;
+        },
+        (error) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+
     } else {
-      this.comentario = false;
-      this.flagComentario = 0;
-      console.log('Cerrar');
+      localStorage.removeItem('postId');
     }
   }
+  
 
   comentarPost(): void {
 
-    this.comentarPostFlag = true;
+    const userId = localStorage.getItem('userId');
+    const postId = localStorage.getItem('postId');
+
+    if (userId != null && postId != null) {
+      this.homeService.comentarPost(userId, postId, this.nuevoComentario).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+        },
+        (error) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+    }
 
   }
 
   guardarComentario(): void {
+    const userId = localStorage.getItem('userId');
+    const postId = localStorage.getItem('postId');
 
-    console.log('El comentario es: ', this.nuevoComentario);
-
+    if (userId != null && postId != null) {
+      this.homeService.comentarPost(userId, postId, this.nuevoComentario).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+        },
+        (error) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+    }
   }
 
   share(): void {
-
     console.log('Vamos a compartir');
-
   }
 
   delete(): void {
-
     console.log('Vamos a eliminar');
-
   }
 
+  post(usuarios: any[]): void {
+    this.homeService.post().subscribe(
+      (Response: any) => {
+        console.log('Respuesta del servidor:', Response);
+        this.posts = Response;  
+        this.renderizar(this.posts, usuarios);
+      },
+      (error) => {
+        console.error('Error al obtener los posts:', error);
+      }
+    );
+  }
+  
+  user(): void {
+    this.loginService.Login().subscribe(
+      (Response: any) => {
+        console.log('Respuesta del servidor:', Response);
+        this.usuarios = Response;
+        this.post(this.usuarios); 
+      },
+      (error) => {
+        console.log('Error del servidor:', error);
+      }
+    );
+  }
+  
+  renderizar(posts: any[], usuarios: any[]): void {
+    this.forMe = [];
+
+    posts.forEach((post: any) => {
+      usuarios.forEach((user: any) => {
+        if (post.username === user.username) {
+          this.forMe.push({
+            userId: user.userId,
+            postId: post.postId,
+            username: user.name,
+            user: user.email,
+            descripcion: post.content,
+            title: post.title,
+            pubDate: post.pubDate
+          });
+        }
+      });
+    });
+
+    const uniqueDescriptions = new Set(); 
+    this.forMe = this.forMe.filter((item) => {
+      if (!uniqueDescriptions.has(item.descripcion)) {
+        uniqueDescriptions.add(item.descripcion); 
+        return true; 
+      }
+      return false; 
+    });
+
+    this.buscar = this.forMe;
+
+    console.log('Usuarios que me interesan:', this.forMe);
+  }
 }

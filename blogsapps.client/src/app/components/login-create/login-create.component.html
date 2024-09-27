@@ -59,6 +59,17 @@
             </mat-error>
           </mat-form-field>
 
+          <!-- Name Field -->
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Usuario</mat-label>
+            <input matInput id="name" formControlName="name" placeholder="name" class="custom-input">
+            <mat-error *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+              <ng-container *ngIf="form.get('name')?.errors?.['required']">
+                El usuario es <strong>obligatorio.</strong>
+              </ng-container>
+            </mat-error>
+          </mat-form-field>
+
           <!-- Password Field -->
           <mat-form-field class="example-full-width" appearance="fill">
             <mat-label>Contraseña</mat-label>

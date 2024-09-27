@@ -208,3 +208,16 @@ mat-form-field {
   text-align: center;
   margin-left: 35%;
 }
+
+.revisarPerfil {
+  text-align: start;
+  cursor: pointer;
+}
+
+.titulo {
+  text-align: center;
+}
+
+.publicacion {
+  text-align: end;
+}

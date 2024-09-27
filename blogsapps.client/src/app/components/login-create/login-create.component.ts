@@ -16,6 +16,7 @@ export class LoginCreateComponent {
   constructor(private blog: FormBuilder, private route: Router, private loginCreateService: LoginCreateService) {
     this.form = this.blog.group({
       email: ['', [Validators.required, Validators.email]],
+      name: ['', [Validators.required]],
       contraseña: ['', [Validators.required, Validators.minLength(6)]],
       confirmarContraseña: ['', [Validators.required, Validators.minLength(6),]],
       role: ['Lector']
@@ -60,8 +61,9 @@ export class LoginCreateComponent {
       const contraseña = this.form.get('contraseña')?.value;
       const confirmarContraseña = this.form.get('confirmarContraseña')?.value;
       const role = this.form.get('role')?.value;
+      const name = this.form.get('name')?.value;
 
-      this.loginCreateService.LoginCreate(email, contraseña, role).subscribe(
+      this.loginCreateService.LoginCreate(email, contraseña, role, name).subscribe(
         (Response: any) => {
           console.log('Respuesta del servidor:', Response);
 

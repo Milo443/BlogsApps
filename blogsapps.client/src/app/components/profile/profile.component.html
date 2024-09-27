@@ -35,8 +35,8 @@
       <!-- Modo vista -->
       <ng-template #viewMode>
         <div class="perfil-info-view">
-          <h1 class="perfil-usuario">{{ usuarioPerfil.username }}</h1>
-          <h2 class="perfil-nombre"> &#64;{{ usuarioPerfil.user }}</h2>
+          <h1 class="perfil-usuario">{{ usuarioPerfil.name }}</h1>
+          <h2 class="perfil-nombre"> &#64;{{ usuarioPerfil.email }}</h2>
           <p class="perfil-bio">{{ usuarioPerfil.descripcion }}</p>
           <div class="perfil-actions">
             <button *ngIf="user !== ''" mat-raised-button color="primary" (click)="activarEdicion()">Editar
@@ -52,19 +52,21 @@
   </div>
 </div>
 
-<div class="body" *ngIf="usuarioPerfil">
+<div class="body" *ngFor="let post of postUsuario">
   <mat-card class="example-card">
     <mat-card-header>
       <div mat-card-avatar class="example-header-image"></div>
-      <mat-card-title>{{ usuarioPerfil.username }}</mat-card-title>
-      <mat-card-subtitle>{{ usuarioPerfil.user }}</mat-card-subtitle>
+      <mat-card-title>{{ post.user }}</mat-card-title>
+      <mat-card-subtitle>{{ post.username }}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <h6>{{ usuarioPerfil.descripcion }}</h6>
+      <h5 class="titulo">{{ post.title }}</h5>
+      <h6 class="contenido">{{ post.content}}</h6>
+      <h6 class="publicacion">{{ post.pubDate}}</h6>
     </mat-card-content>
-    <div class="imagen">
+    <!-- <div class="imagen">
       <img mat-card-image class="image" [src]="usuarioPerfil.imageUrl" alt="Foto de {{ usuarioPerfil.username }}">
-    </div>
+    </div> -->
     <mat-card-actions>
       <div class="reacciones">
         <button (click)="like()" mat-button><mat-icon class="like">thumb_up</mat-icon></button>
