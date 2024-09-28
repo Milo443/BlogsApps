@@ -13,26 +13,27 @@ export class UsuarioService {
 
     constructor(private http: HttpClient) { }
 
-    // Método para agregar un nuevo punto de venta
-    public actualizarPerfil(usuario: any) {
-        // Crear el objeto con todos los datos del formulario
-        const objLogin = { usuario: usuario };
 
-        console.log('Objeto a actualizar:', objLogin);
+    public actualizarPerfil(userId: string, usuario: any, other: any) {
+        console.log('Objeto a actualizar:', usuario);
 
-        // Enviar la solicitud POST
-        return this.http.post<any>(`${this.API}Update`, objLogin);
+        const objLogin = { UserId: userId, Name: usuario.name, Email: usuario.email, Password: other.password, Role:other.role};
+
+        console.log('Objeto de usuario a actualizar: ', objLogin);
+
+        // Enviar la solicitud PUT
+        return this.http.put<any>(`${this.API}Users/${userId}`, objLogin);
     }
 
-        // Método para traer los post
-        public post() {
-            // Enviar la solicitud POST
-            return this.http.get<any>(`${this.API}Posts`);
-        }
+    // Método para traer los post
+    public post() {
+        // Enviar la solicitud POST
+        return this.http.get<any>(`${this.API}Posts`);
+    }
 
-        public obtenerPerfil(username: string) {
-            // Enviar la solicitud POST
-            return this.http.get<any>(`${this.API}Users/${username}`);
-        }
+    public obtenerPerfil(username: string) {
+        // Enviar la solicitud POST
+        return this.http.get<any>(`${this.API}Users/${username}`);
+    }
 
 }

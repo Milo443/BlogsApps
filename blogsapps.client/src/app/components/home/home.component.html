@@ -10,7 +10,7 @@
         </div>
         <span class="example-spacer"></span>
         <!-- Formulario de búsqueda -->
-        <form class="example-form">
+        <form class="example-form" *ngIf="rol === 'Admin' || rol ==='Autor' || rol === 'Lector'">
           <div class="form-container-search">
             <mat-form-field class="example-full-width">
               <input type="text" placeholder="Buscar usuario" aria-label="Search" matInput
@@ -45,6 +45,18 @@
     </p>
   </div>
 
+  <!-- Publicar post -->
+
+  <div class="create-post-container" *ngIf="rol === 'Admin' || rol ==='Autor'">
+    <div class="post-options">
+      <button class="option-button" (click)="crearPost()">
+        Crear Publicación
+      </button>
+    </div>
+  </div>
+  
+
+<!-- Publicar post -->
   <div class="body" *ngFor="let usuario of forMe">
     <mat-card class="example-card">
       <div class="revisarPerfil" (click)="revisarPerfil(usuario.userId)">
@@ -60,11 +72,11 @@
         <h6 class="publicacion">{{ usuario.pubDate}}</h6>
         <mat-card-actions>
           <div class="reacciones">
-            <button (click)="like(usuario.postId)" mat-button><mat-icon class="like">thumb_up</mat-icon></button>
+            <button (click)="like(usuario.postId)" *ngIf="rol === 'Admin' || rol ==='Autor' || rol ==='Lector'" mat-button><mat-icon class="like">favorite</mat-icon></button>
             <button (click)="comment(usuario.postId)" *ngIf="rol === 'Admin' || rol ==='Autor'" mat-button><mat-icon
-                class="comment">comment</mat-icon></button>
-            <button (click)="share()" mat-button><mat-icon class="share">share</mat-icon></button>
-            <button (click)="delete()" *ngIf="rol === 'Admin'" mat-button><mat-icon
+                class="comment"  *ngIf="rol ==='Autor'" >comment</mat-icon></button>
+             <button (click)="edit(usuario.postId)" *ngIf="rol === 'Admin' || (usuario.userId == permised && rol == 'Autor')" mat-button><mat-icon class="share">edit</mat-icon></button> 
+            <button (click)="delete(usuario.postId)" *ngIf="rol == 'Admin' || (usuario.userId == permised && logueado)" mat-button><mat-icon
                 class="delete">delete</mat-icon></button>
           </div>
         </mat-card-actions>
@@ -73,50 +85,39 @@
         <img mat-card-image class="image" [src]="usuario.imageUrl" alt="Foto de {{ usuario.username }}">
       </div> -->
 
-
-      <mat-card-actions *ngIf="comentario">
-        <!-- comments.component.html -->
+      <mat-card-actions *ngIf="comentario && postId_comentario == usuario.postId">
+        <!-- Contenedor para los comentarios existentes -->
         <div class="comments-container">
-          <!-- Comentarios existentes -->
-          <div class="comments-list">
+          <div class="comments-list" *ngFor="let comentario of comentarios">
             <div class="comment-item">
-              <div class="comment-author">Juan Pérez</div>
-              <div class="comment-text">¡Este es un gran post! Me ayudó mucho a entender el tema.</div>
-              <div class="comment-date">1 de septiembre de 2024</div>
-            </div>
-
-            <div class="comment-item">
-              <div class="comment-author">María Gómez</div>
-              <div class="comment-text">Gracias por la información. Estaba buscando algo así.</div>
-              <div class="comment-date">2 de septiembre de 2024</div>
-            </div>
-
-            <div class="comment-item">
-              <div class="comment-author">Carlos López</div>
-              <div class="comment-text">Muy interesante, pero me gustaría más ejemplos prácticos.</div>
-              <div class="comment-date">3 de septiembre de 2024</div>
+              <div class="comment-author">{{comentario.userName}}</div>
+              <div class="comment-text">{{comentario.content}}</div>
+              <div class="comment-date">{{comentario.pubDate}}</div>
             </div>
           </div>
-
-          <button *ngIf="!comentarPostFlag" (click)="comentarPost()" mat-raised-button color="primary"
-            type="submit">Comentar</button>
-
-          <!-- Formulario para añadir un nuevo comentario -->
-          <form class="comment-form" *ngIf="comentarPostFlag">
-            <div class="comentario">
-              <mat-form-field appearance="fill">
-                <mat-label>Comentario</mat-label>
-                <textarea matInput [(ngModel)]="nuevoComentario" name="comentario"
-                  placeholder="Tu comentario"></textarea>
-              </mat-form-field>
-            </div>
-            <div class="guardarComentario">
-              <button (click)="guardarComentario()" mat-raised-button color="primary" type="submit">Publicar
-                comentario</button>
-            </div>
-          </form>
         </div>
+
+        <!-- Botón para comentar -->
+        <button *ngIf="!comentarPostFlag" (click)="comentarPost()" mat-raised-button color="primary" type="button">
+          Comentar
+        </button>
+
       </mat-card-actions>
+      <!-- Formulario para añadir un nuevo comentario -->
+      <form class="comment-form" *ngIf="comentarPostFlag && comentario && postId_comentario == usuario.postId">
+        <div class="comentario">
+          <mat-form-field class="ComentarioInput" appearance="fill">
+            <mat-label>Comentario</mat-label>
+            <textarea matInput [(ngModel)]="nuevoComentario" name="comentario" placeholder="Tu comentario"></textarea>
+          </mat-form-field>
+        </div>
+        <div class="guardarComentario">
+          <button (click)="guardarComentario()" mat-raised-button color="primary" type="submit">Publicar
+            comentario</button>
+        </div>
+      </form>
+
+
     </mat-card>
   </div>
 </div>

@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { UsuarioService } from './login.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HomeService } from '../home/home.service';
+import { LoginService } from '../login/login.service';
+import { MatDialog } from '@angular/material/dialog';
+import { UserDialogComponent } from '../../assets/dialog/user/user_create';
+import { PostDialogComponent } from '../../assets/dialog/post/post_create';
 
 @Component({
   selector: 'app-profile',
@@ -11,6 +16,9 @@ export class ProfileComponent implements OnInit {
   editMode: boolean = false;
   usuarioPerfil: any = {};
   postUsuario: any[] = [];
+  postUsuarioRenderizar: any[] = [];
+  comentarios: any[] = [];
+  usuarios: any[] = [];
   rol: string = '';
   user: string = '';
   user_perfil: string = '';
@@ -19,11 +27,19 @@ export class ProfileComponent implements OnInit {
   flagComentario: number = 0;
   comentarPostFlag: boolean = false;
   nuevoComentario: string = '';
+  postId_comentario: string = '';
+
+  userId: string = '';
+  permised: string = '';
+  permisedUser: boolean = false;
 
   constructor(
     private usuarioService: UsuarioService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private homeService: HomeService,
+    private loginService: LoginService,
+    public dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -31,18 +47,29 @@ export class ProfileComponent implements OnInit {
     this.user = localStorage.getItem('user') || '';
     this.user_perfil = localStorage.getItem('user') || '';
     this.route.paramMap.subscribe(params => {
-      const username = params.get('username');
-      this.user_post = username || '';
+    const username = params.get('username');
+    this.user_post = username || '';
+
+    const userId = localStorage.getItem('userId') || '';
+
+      this.users();
+
+      if (username) {
+        this.permised = username;
+        console.log('Usuario logueado permiso:', this.permised);
+      }
 
       if (username) {
         this.cargarperfil(username);
       }
 
-      if (this.user === username) {
+      if (userId === username) {
         this.user = username;
+        this.permisedUser = true;
         console.log('Es mi perfil');
       } else {
         console.log('No es mi perfil');
+        this.permisedUser = false;
         this.user = '';
       }
 
@@ -61,15 +88,22 @@ export class ProfileComponent implements OnInit {
   }
 
   guardarCambios(): void {
-    this.usuarioService.actualizarPerfil(this.usuarioPerfil).subscribe(
-      (response) => {
-        this.editMode = false;
-        console.log('Perfil actualizado:', response);
-      },
-      (error) => {
-        console.error('Error al actualizar el perfil:', error);
-      }
-    );
+    // this.usuarioService.actualizarPerfil(this.usuarioPerfil).subscribe(
+    //   (response) => {
+    //     this.editMode = false;
+    //     console.log('Perfil actualizado:', response);
+    //   },
+    //   (error) => {
+    //     console.error('Error al actualizar el perfil:', error);
+    //   }
+    // );
+  }
+
+  UserDialogComponent(message: string): void {
+    this.dialog.open(UserDialogComponent, {
+      data: { message: message },
+      disableClose: true 
+    });
   }
 
   home(): void {
@@ -92,19 +126,47 @@ export class ProfileComponent implements OnInit {
     console.log(this.user_perfil, ' desbloqueo al usuario ', this.user_post);
   }
 
-  comment(): void {
-    console.log('Vamos a Comentar');
-    this.flagComentario += 1;
+  comment(postId: string): void {
+    this.comentarPostFlag = true;
 
+    console.log('Vamos a comentar');
+    this.flagComentario += 1;
     console.log(this.flagComentario);
 
-    if (this.flagComentario % 2 !== 0) {
-      this.comentario = true;
-      console.log('Abrir');
+    this.comentario = this.flagComentario % 2 !== 0;
+    console.log(this.comentario ? 'Abrir' : 'Cerrar');
+
+    if (this.comentario) {
+      this.postId_comentario = postId
+
+      this.comentarios = [];
+
+      localStorage.setItem('postId', postId);
+
+      this.homeService.comentarios().subscribe(
+        (Response: any) => {
+          //console.log('Respuesta del servidor:', Response);
+          Response.forEach((comentario: any) => {
+            this.usuarios.forEach((user: any) => {
+              if (comentario.postId == postId && comentario.userId == user.userId) {
+                this.comentarios.push({
+                  ...comentario,
+                  userName: user.name
+                });
+              }
+            });
+          });
+
+          console.log('Comentarios:', this.comentarios);
+
+        },
+        (error) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+
     } else {
-      this.comentario = false;
-      this.flagComentario = 0;
-      console.log('Cerrar');
+      localStorage.removeItem('postId');
     }
   }
 
@@ -115,9 +177,21 @@ export class ProfileComponent implements OnInit {
   }
 
   guardarComentario(): void {
+    const userId = localStorage.getItem('userId');
+    const postId = localStorage.getItem('postId');
 
-    console.log('El comentario es: ', this.nuevoComentario);
-
+    if (userId != null && postId != null) {
+      this.homeService.comentarPost(userId, postId, this.nuevoComentario).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+          this.comment(postId);
+          this.nuevoComentario = '';
+        },
+        (error) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+    }
   }
 
   share(): void {
@@ -126,14 +200,70 @@ export class ProfileComponent implements OnInit {
 
   }
 
-  delete(): void {
+  delete(postId: string): void {
 
-    console.log('Vamos a eliminar');
+    const userId = localStorage.getItem('userId');
+
+    console.log('El usuario con id', userId, 'elimino el Post con id ', postId)
+
+    if (userId != null) {
+
+      this.homeService.deletePost(userId, postId).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+          window.location.reload();
+        },
+        (error: any) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+    }
 
   }
 
-  like(): void {
-    console.log('Vamos a dar like');
+  PostDialogComponent(message: string): void {
+    this.dialog.open(PostDialogComponent, {
+      data: { message: message },
+      disableClose: true 
+    });
+  }
+
+  crearPost(): void {
+    const userId = localStorage.getItem('userId');
+    if (userId != null) {
+      this.PostDialogComponent('Crear Post');
+    }
+  }
+
+  users(): void {
+    this.loginService.Login().subscribe(
+      (Response: any) => {
+        console.log('Respuesta del servidor:', Response);
+        this.usuarios = Response;
+      },
+      (error) => {
+        console.log('Error del servidor:', error);
+      }
+    );
+  }
+
+  like(postId: any): void {
+
+    const userId = localStorage.getItem('userId');
+
+    console.log('El usuario con id', userId, 'le dio like al Post con id ', postId)
+
+    if (userId != null) {
+
+      this.homeService.like(userId, postId).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+        },
+        (error) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+    }
   }
 
 
@@ -148,29 +278,51 @@ export class ProfileComponent implements OnInit {
       (error) => {
         console.error('Error al cargar el perfil:', error);
 
-  });
-}
+      });
+  }
 
-post(name: string, username: string): void {
-  this.usuarioService.post().subscribe(
-    (response) => {
-      const postsConUsuario = response.map((post: any) => ({
-        ...post,
-        username: username,
-        user: name
-      }));
+  post(name: string, username: string): void {
+    this.usuarioService.post().subscribe(
+      (response) => {
+        const postsConUsuario = response.map((post: any) => ({
+          ...post,
+          username: username,
+          user: name
+        }));
 
-      // Agrega los nuevos posts al array existente
-      this.postUsuario = [...this.postUsuario, ...postsConUsuario]; 
-      console.log('Posts actualizados:', this.postUsuario);
-    },
-    (error) => {
-      console.error('Error al cargar los posts:', error);
+        // Agrega los nuevos posts al array existente
+        this.postUsuario = [...this.postUsuario, ...postsConUsuario];
+
+        this.postUsuario.forEach((post: any) => {
+
+          if (post.userId == this.permised) {
+
+            this.postUsuarioRenderizar.push(post);
+
+          }
+
+        });
+
+        console.log('Posts cargados:', this.postUsuarioRenderizar);
+
+      },
+      (error) => {
+        console.error('Error al cargar los posts:', error);
+      }
+    );
+  }
+
+  edit(): void {
+
+    const userId = localStorage.getItem('userId');
+    if (userId != null){
+    
+      this.UserDialogComponent(userId);
     }
-  );
-}
 
-
-
-
+  }
+  
+  editPost(postId: string): void {
+    this.PostDialogComponent(postId);
+  }
 }

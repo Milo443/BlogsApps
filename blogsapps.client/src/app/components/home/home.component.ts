@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { map, Observable, of, startWith } from 'rxjs';
 import { HomeService } from './home.service';
 import { LoginService } from '../login/login.service';
+import { MatDialog } from '@angular/material/dialog';
+import { PostDialogComponent } from '../../assets/dialog/post/post_create';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +22,7 @@ export class HomeComponent implements OnInit {
   flagComentario: number = 0;
   comentarPostFlag: boolean = false;
   nuevoComentario: string = '';
+  postId_comentario: string = '';
   
   comentarios: any[] = [];
   forMe: any[] = [];
@@ -27,10 +30,13 @@ export class HomeComponent implements OnInit {
   posts: any[] = [];
   buscar: any[] = [];
 
+  userId: string = '';
+  permised: string = '';
+  
   filteredUsers: Observable<any[]> = of([]);
   controlCambios = new FormControl();
 
-  constructor(private route: Router, private homeService: HomeService, private loginService: LoginService) {}
+  constructor(private route: Router, private homeService: HomeService, private loginService: LoginService, public dialog: MatDialog) {}
 
   ngOnInit() {
     this.logueado = localStorage.getItem('rol') || '';
@@ -39,6 +45,14 @@ export class HomeComponent implements OnInit {
       this.rol = this.logueado;
       console.log(this.rol);
     }
+
+    this.userId = localStorage.getItem('userId') || '';
+
+    if (this.userId) {
+      this.permised = this.userId;
+    }
+
+    console.log('Usuario:', this.permised);
 
     this.user();
 
@@ -82,6 +96,21 @@ export class HomeComponent implements OnInit {
     );
   }
 
+  PostDialogComponent(message: string): void {
+    this.dialog.open(PostDialogComponent, {
+      data: { message: message },
+      disableClose: true 
+    });
+  }
+
+  crearPost(): void {
+    const userId = localStorage.getItem('userId');
+    if (userId != null) {
+      this.PostDialogComponent('Crear Post');
+    }
+  }
+
+
   Login(): void {
     this.route.navigate(['/Login']);
   }
@@ -124,31 +153,45 @@ export class HomeComponent implements OnInit {
 
   comment(postId: string): void {
     this.comentarPostFlag = true;
-  
+
     console.log('Vamos a comentar');
     this.flagComentario += 1;
     console.log(this.flagComentario);
-  
+
     this.comentario = this.flagComentario % 2 !== 0;
     console.log(this.comentario ? 'Abrir' : 'Cerrar');
-  
-    if (this.comentario) {
-      localStorage.setItem('postId', postId);
 
-     this.homeService.comentarios().subscribe(
-        (Response: any) => {
-          console.log('Respuesta del servidor:', Response);
-          this.comentarios = Response;
-        },
-        (error) => {
-          console.error('Error al obtener los posts:', error);
-        }
-      );
+    if (this.comentario) {
+        this.postId_comentario = postId;
+
+        this.comentarios = [];
+        localStorage.setItem('postId', postId);
+
+        this.homeService.comentarios().subscribe(
+            (Response: any) => {
+                Response.forEach((comentario: any) => {
+                    this.usuarios.forEach((user: any) => {
+                        if (comentario.postId == postId && comentario.userId == user.userId) {
+                            this.comentarios.push({
+                                ...comentario,
+                                userName: user.name 
+                            }); 
+                        }
+                    });
+                });
+
+                console.log('Comentarios:', this.comentarios);
+            },
+            (error) => {
+                console.error('Error al obtener los posts:', error);
+            }
+        );
 
     } else {
-      localStorage.removeItem('postId');
+        localStorage.removeItem('postId');
     }
-  }
+}
+
   
 
   comentarPost(): void {
@@ -177,6 +220,8 @@ export class HomeComponent implements OnInit {
       this.homeService.comentarPost(userId, postId, this.nuevoComentario).subscribe(
         (Response: any) => {
           console.log('Respuesta del servidor:', Response);
+          this.comment(postId);
+          this.nuevoComentario = '';
         },
         (error) => {
           console.error('Error al obtener los posts:', error);
@@ -185,12 +230,29 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  share(): void {
-    console.log('Vamos a compartir');
+  edit(postId: string): void {
+    this.PostDialogComponent(postId);
   }
 
-  delete(): void {
-    console.log('Vamos a eliminar');
+  delete(postId: string): void {
+
+    const userId = localStorage.getItem('userId');
+    
+    console.log('El usuario con id', userId , 'elimino el Post con id ', postId)
+
+    if(userId != null){
+
+      this.homeService.deletePost(userId, postId).subscribe(
+        (Response: any) => {
+          console.log('Respuesta del servidor:', Response);
+          window.location.reload();
+        },
+        (error: any) => {
+          console.error('Error al obtener los posts:', error);
+        }
+      );
+    }
+    
   }
 
   post(usuarios: any[]): void {
@@ -222,9 +284,12 @@ export class HomeComponent implements OnInit {
   renderizar(posts: any[], usuarios: any[]): void {
     this.forMe = [];
 
+    console.log('Posts:', posts);
+
     posts.forEach((post: any) => {
       usuarios.forEach((user: any) => {
-        if (post.username === user.username) {
+        if (post.userId === user.userId) {
+
           this.forMe.push({
             userId: user.userId,
             postId: post.postId,
@@ -246,6 +311,8 @@ export class HomeComponent implements OnInit {
       }
       return false; 
     });
+
+    this.forMe = this.forMe.reverse();
 
     this.buscar = this.forMe;
 
